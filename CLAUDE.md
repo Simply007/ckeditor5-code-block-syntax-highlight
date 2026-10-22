@@ -28,7 +28,8 @@ The package is distributed from GitHub, not npm. Consumers install a tag, and `p
 - `theme/codeblocksyntaxhighlight.css`: token colours as `--ck-code-highlight-*` custom properties. The build copies it
   to `dist/index.css`, exported as `ckeditor5-code-block-syntax-highlight/index.css`.
 - `tests/`: Vitest suites in jsdom. `tests/setup.ts` installs the no-op `ResizeObserver` a real editor needs.
-- `sample/`: the `pnpm dev` page, running the plugin from `src/` with a custom Rust grammar.
+- `sample/`: the `pnpm dev` page, running the plugin from `src/` with a custom Rust grammar. `pnpm build:sample` builds
+  it to `site/`, and `.github/workflows/pages.yml` deploys that to GitHub Pages on every push to `main`.
 - `scripts/build.js`: `tsc -p tsconfig.build.json` plus the CSS copy.
 
 ## Invariants
@@ -69,6 +70,7 @@ pnpm lint          # ESLint
 pnpm format        # Prettier write
 pnpm check         # format:check, lint, typecheck, test, as CI runs them
 pnpm build         # compile to dist/
+pnpm build:sample  # build the sample page to site/
 ```
 
 `pnpm-workspace.yaml` marks this folder as its own pnpm root. Without it, pnpm can adopt a workspace file from a parent

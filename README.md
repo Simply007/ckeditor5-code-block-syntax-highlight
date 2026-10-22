@@ -11,6 +11,8 @@ track changes.
 
 Highlighting is a view-only effect. The editor data, `getData()` output, and exported documents are unchanged.
 
+**[Try the live sample](https://ondrej.chrastina.dev/ckeditor5-code-block-syntax-highlight/)**, built from `sample/` on every push to `main`.
+
 ## Installation
 
 The package is not on npm. Install it from GitHub, pinned to a release tag:
@@ -37,8 +39,7 @@ A project without a `pnpm-workspace.yaml` can put the same list in `package.json
 }
 ```
 
-Without the allowlist, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`. The repository is private, so installing
-also needs git access to it, through SSH keys or a git credential helper.
+Without the allowlist, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`.
 
 The plugin needs `ckeditor5` 48.x as a peer dependency.
 
@@ -138,6 +139,7 @@ browser without it, the plugin logs a warning and the editor works normally with
 ```shell
 pnpm install   # also builds dist/ through the prepare script
 pnpm dev       # sample page with live reload, running the plugin from src/
+pnpm build:sample  # build the sample to site/, as the Pages workflow does
 pnpm check     # format, lint, typecheck and tests, as CI runs them
 pnpm build     # compile to dist/
 ```
