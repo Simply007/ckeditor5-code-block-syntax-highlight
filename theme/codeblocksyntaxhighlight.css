@@ -1,0 +1,58 @@
+/*
+ * Token colors for the code block syntax highlighting plugin (GitHub Light palette).
+ *
+ * Override any `--ck-code-highlight-*` property to theme it. `::highlight()` pseudo-elements
+ * only support color, background and text-decoration properties.
+ */
+
+:root {
+  --ck-code-highlight-keyword: #cf222e;
+  --ck-code-highlight-string: #0a3069;
+  --ck-code-highlight-comment: #6e7781;
+  --ck-code-highlight-number: #0550ae;
+  --ck-code-highlight-title: #8250df;
+  --ck-code-highlight-attr: #953800;
+  --ck-code-highlight-tag: #116329;
+  --ck-code-highlight-addition: #116329;
+  --ck-code-highlight-addition-background: #dafbe1;
+  --ck-code-highlight-deletion: #82071e;
+  --ck-code-highlight-deletion-background: #ffebe9;
+}
+
+::highlight(ck-code-keyword) {
+  color: var(--ck-code-highlight-keyword);
+}
+
+::highlight(ck-code-string) {
+  color: var(--ck-code-highlight-string);
+}
+
+::highlight(ck-code-comment) {
+  color: var(--ck-code-highlight-comment);
+}
+
+::highlight(ck-code-number) {
+  color: var(--ck-code-highlight-number);
+}
+
+::highlight(ck-code-title) {
+  color: var(--ck-code-highlight-title);
+}
+
+::highlight(ck-code-attr) {
+  color: var(--ck-code-highlight-attr);
+}
+
+::highlight(ck-code-tag) {
+  color: var(--ck-code-highlight-tag);
+}
+
+::highlight(ck-code-addition) {
+  color: var(--ck-code-highlight-addition);
+  background-color: var(--ck-code-highlight-addition-background);
+}
+
+::highlight(ck-code-deletion) {
+  color: var(--ck-code-highlight-deletion);
+  background-color: var(--ck-code-highlight-deletion-background);
+}

@@ -1,0 +1,3 @@
+# Marks this folder as its own pnpm root, so pnpm never adopts a workspace from a parent directory.
+onlyBuiltDependencies:
+  - esbuild
