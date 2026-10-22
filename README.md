@@ -27,6 +27,19 @@ onlyBuiltDependencies:
   - ckeditor5-code-block-syntax-highlight
 ```
 
+A project without a `pnpm-workspace.yaml` can put the same list in `package.json`:
+
+```json
+{
+  "pnpm": {
+    "onlyBuiltDependencies": ["ckeditor5-code-block-syntax-highlight"]
+  }
+}
+```
+
+Without the allowlist, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`. The repository is private, so installing
+also needs git access to it, through SSH keys or a git credential helper.
+
 The plugin needs `ckeditor5` 48.x as a peer dependency.
 
 ## Usage
