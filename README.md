@@ -1,5 +1,7 @@
 # CKEditor 5 code block syntax highlighting
 
+[![npm](https://img.shields.io/npm/v/@simply007org/ckeditor5-code-block-syntax-highlight)](https://www.npmjs.com/package/@simply007org/ckeditor5-code-block-syntax-highlight)
+
 Live syntax highlighting for [CKEditor 5](https://ckeditor.com/ckeditor-5/) code blocks, as you type.
 
 CKEditor cannot colour code blocks natively, because its editing engine owns the DOM inside `<pre><code>`
@@ -17,31 +19,9 @@ Highlighting is a view-only effect. The editor data, `getData()` output, and exp
 
 ## Installation
 
-The package is not on npm. Install it from GitHub, pinned to a release tag:
-
 ```shell
-pnpm add github:Simply007/ckeditor5-code-block-syntax-highlight#v0.2.0
+pnpm add @simply007org/ckeditor5-code-block-syntax-highlight
 ```
-
-Installing from GitHub runs the package's `prepare` script, which compiles it. pnpm 10 skips dependency build scripts
-unless they are allowed, so list the package in your `pnpm-workspace.yaml`:
-
-```yaml
-onlyBuiltDependencies:
-  - ckeditor5-code-block-syntax-highlight
-```
-
-A project without a `pnpm-workspace.yaml` can put the same list in `package.json`:
-
-```json
-{
-  "pnpm": {
-    "onlyBuiltDependencies": ["ckeditor5-code-block-syntax-highlight"]
-  }
-}
-```
-
-Without the allowlist, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`.
 
 The plugin needs `ckeditor5` 48.x or 49.x as a peer dependency. Its tests run against both.
 
@@ -51,10 +31,10 @@ Add the plugin next to `CodeBlock` and import the token colours once:
 
 ```ts
 import { ClassicEditor, CodeBlock, Essentials, Paragraph } from 'ckeditor5';
-import { CodeBlockSyntaxHighlight } from 'ckeditor5-code-block-syntax-highlight';
+import { CodeBlockSyntaxHighlight } from '@simply007org/ckeditor5-code-block-syntax-highlight';
 
 import 'ckeditor5/ckeditor5.css';
-import 'ckeditor5-code-block-syntax-highlight/index.css';
+import '@simply007org/ckeditor5-code-block-syntax-highlight/index.css';
 
 ClassicEditor.create(document.querySelector('#editor'), {
   licenseKey: '<YOUR_LICENSE_KEY>',

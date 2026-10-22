@@ -10,7 +10,8 @@ rendered `<pre><code>` with highlight.js and paints the tokens with the CSS Cust
 `::highlight()` rules). It never mutates the editing DOM. That is the whole point of the design: CKEditor's renderer
 owns that DOM, and any node the plugin inserted would be removed on the next render or break collaboration.
 
-The package is distributed from GitHub, not npm. Consumers install a tag, and `prepare` builds `dist/` on install.
+The package is published to npm as `@simply007org/ckeditor5-code-block-syntax-highlight`. It can also be installed from a GitHub tag, in which case `prepare` builds
+`dist/` on install.
 
 ## Layout
 
@@ -26,7 +27,7 @@ The package is distributed from GitHub, not npm. Consumers install a tag, and `p
 - `src/codeblocksyntaxhighlightconfig.ts`: the `codeBlockSyntaxHighlight` config interface.
 - `src/augmentation.ts`: adds the config key to `EditorConfig` and the plugin to `PluginsMap`.
 - `theme/codeblocksyntaxhighlight.css`: token colours as `--ck-code-highlight-*` custom properties. The build copies it
-  to `dist/index.css`, exported as `ckeditor5-code-block-syntax-highlight/index.css`.
+  to `dist/index.css`, exported as `@simply007org/ckeditor5-code-block-syntax-highlight/index.css`.
 - `tests/`: Vitest suites in jsdom. `tests/setup.ts` installs the no-op `ResizeObserver` a real editor needs.
 - `sample/`: the `pnpm dev` page, running the plugin from `src/` with a custom Rust grammar. `sample/landing.html` is the
   Pages landing page that links to each CKEditor build.
@@ -102,11 +103,15 @@ When the lowest major changes, also move the plain `ckeditor5` and `@ckeditor/ck
 
 ## Releasing
 
-1. Bump `version` in `package.json`.
-2. Commit, then tag `v<version>` and push the tag.
-3. Consumers move their `github:Simply007/ckeditor5-code-block-syntax-highlight#v<version>` dependency to the new tag.
+Releases publish to npm from GitHub Actions, through npm trusted publishing, so no npm token is stored anywhere.
 
-`dist/` is not committed. It is built on install.
+1. Bump `version` in `package.json` and commit.
+2. Tag `v<version>` and push the tag.
+3. `.github/workflows/release.yml` checks that the tag matches `package.json`, runs `pnpm check`, and runs
+   `npm publish`, which attaches a provenance statement.
+
+`prepublishOnly` runs `pnpm check`, and `prepare` builds `dist/`, so a manual `npm publish` is gated the same way.
+`dist/` is not committed. The tarball ships `dist/` and `src/`, so the source maps resolve.
 
 ## Agent skills
 

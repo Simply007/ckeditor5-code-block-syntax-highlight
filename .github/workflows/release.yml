@@ -1,0 +1,38 @@
+name: Release
+
+on:
+  push:
+    tags: ['v*']
+
+permissions:
+  contents: read
+  # npm trusted publishing exchanges this OIDC token for a short-lived publish credential.
+  id-token: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: https://registry.npmjs.org
+      - name: Check the tag matches package.json
+        run: test "v$(node -p "require('./package.json').version")" = "$GITHUB_REF_NAME"
+      - name: Skip a version that is already published
+        id: published
+        run: |
+          if npm view "$(node -p "require('./package.json').name")@${GITHUB_REF_NAME#v}" version >/dev/null 2>&1; then
+            echo "already=true" >> "$GITHUB_OUTPUT"
+          fi
+      - if: steps.published.outputs.already != 'true'
+        run: pnpm install --frozen-lockfile
+      # Trusted publishing needs npm 11.5.1 or newer.
+      - if: steps.published.outputs.already != 'true'
+        run: npm install -g npm@latest
+      # `prepublishOnly` runs `pnpm check` before the tarball is packed.
+      - if: steps.published.outputs.already != 'true'
+        run: npm publish

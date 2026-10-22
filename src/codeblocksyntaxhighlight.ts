@@ -17,7 +17,7 @@ import { collectTokenRanges, type RangesByBucket } from './tokens.js';
  * rules), which styles plain DOM ranges without touching the tree — safe with the
  * renderer, real-time collaboration, comments, and track changes.
  *
- * The colors come from the package stylesheet, `ckeditor5-code-block-syntax-highlight/index.css`.
+ * The colors come from the package stylesheet, `@simply007org/ckeditor5-code-block-syntax-highlight/index.css`.
  */
 export class CodeBlockSyntaxHighlight extends Plugin {
   /** This editor's own highlight.js instance, so its grammars never leak into another editor. */
