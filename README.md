@@ -11,14 +11,16 @@ track changes.
 
 Highlighting is a view-only effect. The editor data, `getData()` output, and exported documents are unchanged.
 
-**[Try the live sample](https://ondrej.chrastina.dev/ckeditor5-code-block-syntax-highlight/)**, built from `sample/` on every push to `main`.
+**Try the live sample** on [CKEditor 5 v49](https://ondrej.chrastina.dev/ckeditor5-code-block-syntax-highlight/v49/) or
+[CKEditor 5 v48](https://ondrej.chrastina.dev/ckeditor5-code-block-syntax-highlight/v48/). Both are built from `sample/` on every push to
+`main`.
 
 ## Installation
 
 The package is not on npm. Install it from GitHub, pinned to a release tag:
 
 ```shell
-pnpm add github:Simply007/ckeditor5-code-block-syntax-highlight#v0.1.0
+pnpm add github:Simply007/ckeditor5-code-block-syntax-highlight#v0.2.0
 ```
 
 Installing from GitHub runs the package's `prepare` script, which compiles it. pnpm 10 skips dependency build scripts
@@ -41,7 +43,7 @@ A project without a `pnpm-workspace.yaml` can put the same list in `package.json
 
 Without the allowlist, pnpm stops with `ERR_PNPM_GIT_DEP_PREPARE_NOT_ALLOWED`.
 
-The plugin needs `ckeditor5` 48.x as a peer dependency.
+The plugin needs `ckeditor5` 48.x or 49.x as a peer dependency. Its tests run against both.
 
 ## Usage
 
@@ -139,8 +141,8 @@ browser without it, the plugin logs a warning and the editor works normally with
 ```shell
 pnpm install   # also builds dist/ through the prepare script
 pnpm dev       # sample page with live reload, running the plugin from src/
-pnpm build:sample  # build the sample to site/, as the Pages workflow does
-pnpm check     # format, lint, typecheck and tests, as CI runs them
+pnpm build:pages   # build the sample for every supported CKEditor major into site/
+pnpm check     # format, lint, typecheck, and tests on CKEditor 48 and 49, as CI runs them
 pnpm build     # compile to dist/
 ```
 

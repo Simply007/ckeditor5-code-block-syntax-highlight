@@ -1,6 +1,10 @@
 import { defineConfig } from 'vitest/config';
 
+import { ckeditorAliases } from './vite.config';
+
 export default defineConfig({
+  // `CKEDITOR_MAJOR=49 pnpm test` runs the suite against CKEditor 49.
+  resolve: { alias: ckeditorAliases() },
   test: {
     environment: 'jsdom',
     include: ['tests/**/*.test.ts'],

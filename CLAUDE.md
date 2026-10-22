@@ -28,8 +28,10 @@ The package is distributed from GitHub, not npm. Consumers install a tag, and `p
 - `theme/codeblocksyntaxhighlight.css`: token colours as `--ck-code-highlight-*` custom properties. The build copies it
   to `dist/index.css`, exported as `ckeditor5-code-block-syntax-highlight/index.css`.
 - `tests/`: Vitest suites in jsdom. `tests/setup.ts` installs the no-op `ResizeObserver` a real editor needs.
-- `sample/`: the `pnpm dev` page, running the plugin from `src/` with a custom Rust grammar. `pnpm build:sample` builds
-  it to `site/`, and `.github/workflows/pages.yml` deploys that to GitHub Pages on every push to `main`.
+- `sample/`: the `pnpm dev` page, running the plugin from `src/` with a custom Rust grammar. `sample/landing.html` is the
+  Pages landing page that links to each CKEditor build.
+- `scripts/build-pages.js`: builds the sample once per supported CKEditor major into `site/v<major>/` and copies the
+  landing page to `site/index.html`. `.github/workflows/pages.yml` deploys `site/` on every push to `main`.
 - `scripts/build.js`: `tsc -p tsconfig.build.json` plus the CSS copy.
 
 ## Invariants
@@ -63,14 +65,15 @@ running `pnpm dev`.
 ```shell
 pnpm install       # installs and builds dist/ through prepare
 pnpm dev           # Vite sample page
-pnpm test          # Vitest once
+pnpm test          # Vitest once, on CKEditor 48
+pnpm test:v49      # Vitest once, on CKEditor 49
 pnpm test:watch    # Vitest in watch mode
 pnpm typecheck     # tsc --noEmit
 pnpm lint          # ESLint
 pnpm format        # Prettier write
-pnpm check         # format:check, lint, typecheck, test, as CI runs them
+pnpm check         # format:check, lint, typecheck, test, test:v49, as CI runs them
 pnpm build         # compile to dist/
-pnpm build:sample  # build the sample page to site/
+pnpm build:pages   # build the sample for every supported major into site/
 ```
 
 `pnpm-workspace.yaml` marks this folder as its own pnpm root. Without it, pnpm can adopt a workspace file from a parent
@@ -78,6 +81,24 @@ directory and install somewhere else.
 
 `@ckeditor/ckeditor5-core` is a dev dependency only so that `augmentation.ts` resolves in this repo. pnpm does not hoist
 it to the root. Keep its version equal to `ckeditor5`'s. Consumers resolve it through `ckeditor5`'s own dependency.
+
+## Supported CKEditor versions
+
+The plugin supports CKEditor 5 majors 48 and 49, declared as the `ckeditor5` peer range. Both are installed: 48 as the
+plain `ckeditor5` dev dependency, and 49 under the npm alias `ckeditor5-v49`. Setting `CKEDITOR_MAJOR=49` makes Vite and
+Vitest resolve every `ckeditor5` import to the alias, the plugin's own imports included, so each run loads exactly one
+CKEditor. `ckeditorAliases()` in `vite.config.ts` does this, and `vitest.config.ts` reuses it. Typechecking runs against
+48 only, the lowest supported major.
+
+To add a major, or drop one, update all of these together:
+
+1. The `ckeditor5` peer range in `package.json`, and the aliased `ckeditor5-v<major>` dev dependency.
+2. `CKEDITOR_MAJORS` in `vite.config.ts`.
+3. The `majors` list in `scripts/build-pages.js`.
+4. The version links in `sample/main.ts` and the cards in `sample/landing.html`.
+5. The `test:v<major>` script and `check` in `package.json`.
+
+When the lowest major changes, also move the plain `ckeditor5` and `@ckeditor/ckeditor5-core` dev dependencies to it.
 
 ## Releasing
 
@@ -93,7 +114,7 @@ it to the root. Keep its version equal to `ckeditor5`'s. Consumers resolve it th
 the `skills` CLI and pinned in `skills-lock.json`. `.claude/skills/` symlinks to them for Claude Code.
 
 - `ckeditor`: setting up and configuring CKEditor 5, including the sample page.
-- `ckeditor-update`: upgrading CKEditor 5. After an upgrade, also bump `@ckeditor/ckeditor5-core` and the
-  `ckeditor5` peer range, and check the `DEFAULT_GRAMMARS` test.
+- `ckeditor-update`: upgrading CKEditor 5. A new major also needs the steps under "Supported CKEditor versions", and
+  the `DEFAULT_GRAMMARS` test checked on it.
 
 Refresh them with `npx skills update -p`, and restore them from the lock file with `npx skills experimental_install`.

@@ -11,10 +11,28 @@
         padding: 0 16px;
         font-family: system-ui, sans-serif;
       }
+
+      .versions {
+        display: flex;
+        gap: 12px;
+        align-items: center;
+        flex-wrap: wrap;
+        font-size: 14px;
+      }
+
+      .versions a[aria-current='page'] {
+        font-weight: 600;
+        color: inherit;
+        text-decoration: none;
+      }
     </style>
   </head>
   <body>
     <h1>Code block syntax highlighting</h1>
+    <p class="versions">
+      <span>Running on CKEditor 5 <strong id="ckeditor-version"></strong></span>
+      <span id="version-links"></span>
+    </p>
     <p>Edit the code blocks, switch their language, or add one from the toolbar.</p>
     <div id="editor"></div>
     <script type="module" src="./main.ts"></script>

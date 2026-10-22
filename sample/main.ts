@@ -1,4 +1,4 @@
-import { ClassicEditor, CodeBlock, Essentials, Heading, Paragraph } from 'ckeditor5';
+import { ClassicEditor, CodeBlock, Essentials, Heading, Paragraph, version } from 'ckeditor5';
 import rust from 'highlight.js/lib/languages/rust';
 import 'ckeditor5/ckeditor5.css';
 
@@ -50,3 +50,24 @@ const editor = await ClassicEditor.create(document.querySelector<HTMLElement>('#
 });
 
 Object.assign(window, { editor });
+
+document.querySelector('#ckeditor-version')!.textContent = `v${version}`;
+
+// The Pages build serves one copy of this sample per CKEditor major, as sibling `v<major>/` folders.
+if (import.meta.env.PROD) {
+  const currentMajor = version.split('.')[0];
+  const links = ['48', '49'].map((major) => {
+    const link = document.createElement('a');
+
+    link.href = `../v${major}/`;
+    link.textContent = `v${major}`;
+
+    if (major === currentMajor) {
+      link.setAttribute('aria-current', 'page');
+    }
+
+    return link;
+  });
+
+  document.querySelector('#version-links')!.replaceChildren('Switch to: ', ...links.flatMap((link) => [link, ' ']));
+}
