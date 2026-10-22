@@ -37,6 +37,7 @@
   "scripts": {
     "dev": "vite",
     "build": "node scripts/build.js",
+    "build:sample": "vite build",
     "prepare": "pnpm build",
     "lint": "eslint .",
     "lint:fix": "eslint . --fix",

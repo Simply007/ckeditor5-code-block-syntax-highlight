@@ -24,7 +24,7 @@ const sharedRules = {
 };
 
 export default tseslint.config(
-  { ignores: ['dist/', 'node_modules/', '.agents/', '.claude/'] },
+  { ignores: ['dist/', 'site/', 'node_modules/', '.agents/', '.claude/'] },
   js.configs.recommended,
   {
     files: ['**/*.ts'],
