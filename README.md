@@ -78,6 +78,25 @@ ClassicEditor.create(element, {
 Import grammars statically, as above, so your bundler includes them. The built-in map is exported as
 `DEFAULT_GRAMMARS`.
 
+### `codeBlockSyntaxHighlight.tokenCache`
+
+Whether to reuse a code block's tokens while its text and language are unchanged. Defaults to `true`.
+
+Every editing-view render runs a highlight pass over all code blocks. That includes typing anywhere in the document, a
+caret move, and a remote user's change in real-time collaboration. With the cache, a pass re-runs highlight.js only for
+the code blocks whose text changed. The cache keeps one token list per rendered code block and frees it with the block.
+
+```ts
+ClassicEditor.create(element, {
+  // …
+  codeBlockSyntaxHighlight: {
+    tokenCache: false,
+  },
+});
+```
+
+Turn it off only to save the memory those token lists take, accepting that every pass re-tokenizes every code block.
+
 ### Theming
 
 Colours live in CSS custom properties, so a theme is a stylesheet rather than an editor option. The defaults follow the
@@ -112,9 +131,9 @@ browser without it, the plugin logs a warning and the editor works normally with
 - **Several editors on one page** share the page-wide highlight registry safely. Each editor adds and removes only its
   own ranges, and keeps its own highlight.js instance, so one editor's `grammars` never reach another.
 - **Multi-root editors** are highlighted in every root.
-- **Performance**: each render schedules one highlight pass per animation frame, covering every code block. A typical
-  document takes well under a millisecond per pass. Very large code blocks cost more, because the whole document is
-  re-tokenized on each change.
+- **Performance**: each render schedules one highlight pass per animation frame, covering every code block. With the
+  token cache, a pass re-tokenizes only the code blocks whose text changed. In headless Chrome, a document with four
+  175-line code blocks takes about 2.5 ms per pass when typing outside the code, against 13 ms without the cache.
 
 ## Development
 

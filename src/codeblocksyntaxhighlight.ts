@@ -5,7 +5,14 @@ import type { HLJSApi } from 'highlight.js';
 import type { CodeBlockSyntaxHighlightConfig } from './codeblocksyntaxhighlightconfig.js';
 import { DEFAULT_GRAMMARS } from './grammars.js';
 import { replaceRanges, supportsCustomHighlights } from './highlights.js';
-import { collectTokenRanges, type RangesByBucket } from './tokens.js';
+import {
+  addTokenRanges,
+  readCodeText,
+  tokenizeCode,
+  type CodeToken,
+  type RangesByBucket,
+  type TextSegment,
+} from './tokens.js';
 
 /**
  * Live syntax highlighting for code blocks in the editing view.
@@ -29,6 +36,12 @@ export class CodeBlockSyntaxHighlight extends Plugin {
    */
   private readonly _languages = new Set<string>();
 
+  /**
+   * The last tokenization of each rendered `<code>`, reused while its text and language are unchanged.
+   * `null` when `tokenCache` is off. Keyed weakly, so an entry goes away with its element.
+   */
+  private _tokenCache: WeakMap<Element, { language: string; text: string; tokens: CodeToken[] }> | null = null;
+
   /** The ranges this editor currently contributes to the shared highlights. */
   private _ranges: RangesByBucket = new Map();
 
@@ -50,6 +63,10 @@ export class CodeBlockSyntaxHighlight extends Plugin {
 
     const config: CodeBlockSyntaxHighlightConfig = this.editor.config.get('codeBlockSyntaxHighlight') ?? {};
     const grammars = { ...DEFAULT_GRAMMARS, ...config.grammars };
+
+    if (config.tokenCache ?? true) {
+      this._tokenCache = new WeakMap();
+    }
 
     for (const [language, grammar] of Object.entries(grammars)) {
       if (grammar) {
@@ -97,13 +114,34 @@ export class CodeBlockSyntaxHighlight extends Plugin {
         const language = this._getCodeBlockLanguage(codeElement);
 
         if (language && this._languages.has(language)) {
-          collectTokenRanges(codeElement, this._hljs, language, ranges);
+          this._addCodeBlockRanges(codeElement, language, ranges);
         }
       }
     }
 
     replaceRanges(this._ranges, ranges);
     this._ranges = ranges;
+  }
+
+  /** Tokenizes one rendered code block, or reuses its cached tokens, and adds a `Range` per token to `ranges`. */
+  private _addCodeBlockRanges(codeElement: Element, language: string, ranges: RangesByBucket): void {
+    const segments: TextSegment[] = [];
+    const text = readCodeText(codeElement, segments);
+
+    if (!text.trim()) {
+      return;
+    }
+
+    const cached = this._tokenCache?.get(codeElement);
+    const tokens =
+      cached?.language === language && cached.text === text ? cached.tokens : tokenizeCode(this._hljs, text, language);
+
+    if (!tokens) {
+      return;
+    }
+
+    this._tokenCache?.set(codeElement, { language, text, tokens });
+    addTokenRanges(segments, tokens, ranges);
   }
 
   /**
