@@ -19,8 +19,8 @@ The package is published to npm as `@simply007org/ckeditor5-code-block-syntax-hi
   internal.
 - `src/codeblocksyntaxhighlight.ts`: the `Plugin`. Reads config, registers grammars on its own highlight.js instance,
   and runs one highlight pass per animation frame after each view `render`.
-- `src/tokens.ts`: the DOM tokenizer. Flattens a code block to text, runs highlight.js, and maps each token back to a
-  DOM `Range`. Also holds the token buckets and the highlight.js scope-to-bucket map.
+- `src/tokens.ts`: the DOM tokenizer. `readCodeText()` flattens a code block to text, `tokenizeCode()` runs highlight.js
+  into text-offset tokens, and `addTokenRanges()` maps tokens back to DOM `Range`s. Also holds the token buckets and the highlight.js scope-to-bucket map.
 - `src/highlights.ts`: the shared `CSS.highlights` layer. Feature detection, and `replaceRanges()`, which swaps one
   editor's ranges in the page-wide registry without touching other editors' ranges.
 - `src/grammars.ts`: `DEFAULT_GRAMMARS`, one grammar per default `codeBlock.languages` entry.
@@ -49,6 +49,10 @@ The package is published to npm as `@simply007org/ckeditor5-code-block-syntax-hi
   `class`, so parsing `language-*` classes misses custom classes and misreads unrelated ones.
 - **Gate on configured keys, not `getLanguage()`.** highlight.js resolves aliases, so `getLanguage('html')` finds the
   XML grammar even when `html` is configured as `false`.
+- **Tokens are cached, ranges are not.** `tokenizeCode()` is the expensive step, so the plugin keeps each rendered
+  `<code>` element's tokens in a `WeakMap` and reuses them while the text and language match. `addTokenRanges()` still
+  rebuilds every `Range` on every pass, because a render can replace the text nodes. The `tokenCache: false` option
+  turns the cache off.
 - **Offsets must survive the HTML re-parse.** highlight.js output is parsed back to recover token offsets, and the HTML
   parser collapses `\r\n`. `highlightCode()` replaces each `\r` with `\n` first, which keeps offsets one-to-one.
 - **Grammars are static imports**, so bundlers include them. `DEFAULT_GRAMMARS` must match the code block feature's

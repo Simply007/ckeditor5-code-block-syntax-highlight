@@ -1,4 +1,6 @@
 import { ClassicEditor, Essentials, Paragraph, type EditorConfig } from 'ckeditor5';
+import type { HLJSApi } from 'highlight.js';
+import hljsCore from 'highlight.js/lib/core';
 import rust from 'highlight.js/lib/languages/rust';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 
@@ -225,6 +227,85 @@ describe('CodeBlockSyntaxHighlight', () => {
       await afterHighlightPass();
 
       expect(registry.size).toBe(0);
+    });
+  });
+
+  describe('the token cache', () => {
+    /**
+     * Each editor tokenizes through its own highlight.js instance, created when the plugin is.
+     * Call before creating the editor; the returned function spies on that instance's `highlight()`.
+     */
+    function watchTokenizer() {
+      const newInstance = vi.spyOn(hljsCore, 'newInstance');
+
+      return () => vi.spyOn(newInstance.mock.results.at(-1)!.value as HLJSApi, 'highlight');
+    }
+
+    /** Re-renders the editing view without changing the document, as a caret move or remote cursor does. */
+    async function renderWithoutChanges(editor: ClassicEditor) {
+      editor.editing.view.forceRender();
+      await afterHighlightPass();
+    }
+
+    it('repaints unchanged code without tokenizing it again', async () => {
+      const spyOnHighlight = watchTokenizer();
+      const editor = await createEditor('<pre><code class="language-javascript">const a = 1;</code></pre>');
+      await afterHighlightPass();
+      const highlight = spyOnHighlight();
+
+      await renderWithoutChanges(editor);
+
+      expect(highlight).not.toHaveBeenCalled();
+      expect(paintedTokens('keyword')).toEqual(['const']);
+    });
+
+    it('tokenizes again only the code block whose text changed', async () => {
+      const spyOnHighlight = watchTokenizer();
+      const editor = await createEditor(
+        '<pre><code class="language-javascript">const a = 1;</code></pre>' +
+          '<pre><code class="language-python">def b(): pass</code></pre>',
+      );
+      await afterHighlightPass();
+      const highlight = spyOnHighlight();
+
+      editor.model.change((writer) => {
+        const firstCodeBlock = editor.model.document.getRoot()!.getChild(0)!;
+
+        writer.insertText(' let', writer.createPositionAt(firstCodeBlock, 'end'));
+      });
+      await afterHighlightPass();
+
+      expect(highlight).toHaveBeenCalledOnce();
+      expect(highlight.mock.calls[0][0]).toBe('const a = 1; let');
+      expect(paintedTokens('keyword').sort()).toEqual(['const', 'def', 'let', 'pass']);
+    });
+
+    it('tokenizes again when only the language changes', async () => {
+      const editor = await createEditor('<pre><code class="language-javascript">def f(): pass</code></pre>');
+      await afterHighlightPass();
+
+      expect(paintedTokens('keyword')).not.toContain('def');
+
+      editor.model.change((writer) => {
+        writer.setAttribute('language', 'python', editor.model.document.getRoot()!.getChild(0)!);
+      });
+      await afterHighlightPass();
+
+      expect(paintedTokens('keyword')).toEqual(['def', 'pass']);
+    });
+
+    it('tokenizes every code block on every pass when `tokenCache` is `false`', async () => {
+      const spyOnHighlight = watchTokenizer();
+      const editor = await createEditor('<pre><code class="language-javascript">const a = 1;</code></pre>', {
+        codeBlockSyntaxHighlight: { tokenCache: false },
+      });
+      await afterHighlightPass();
+      const highlight = spyOnHighlight();
+
+      await renderWithoutChanges(editor);
+
+      expect(highlight).toHaveBeenCalledOnce();
+      expect(paintedTokens('keyword')).toEqual(['const']);
     });
   });
 

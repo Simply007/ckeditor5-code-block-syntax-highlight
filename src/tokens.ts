@@ -57,32 +57,28 @@ const HLJS_SCOPE_TO_BUCKET: Record<string, TokenBucket | undefined> = {
 };
 
 /** A DOM text node's slice of the code block's full text, by global character offset. */
-interface TextSegment {
+export interface TextSegment {
   node: Text;
   start: number;
   end: number;
 }
 
+/** One highlight.js token, as a span of the code block's full text. */
+export interface CodeToken {
+  start: number;
+  end: number;
+  bucket: TokenBucket;
+}
+
 /**
- * Tokenizes one rendered code block and appends a DOM `Range` per token to `rangesByBucket`.
+ * Runs highlight.js over a code block's text and flattens the result into text-offset tokens, or
+ * returns `null` when the grammar rejects the input. This is the expensive part of a highlight pass.
  */
-export function collectTokenRanges(
-  codeElement: Element,
-  hljs: HLJSApi,
-  language: string,
-  rangesByBucket: RangesByBucket,
-): void {
-  const segments: TextSegment[] = [];
-  const text = readCodeText(codeElement, segments);
-
-  if (!text.trim()) {
-    return;
-  }
-
+export function tokenizeCode(hljs: HLJSApi, text: string, language: string): CodeToken[] | null {
   const highlightedHtml = highlightCode(hljs, text, language);
 
   if (highlightedHtml === null) {
-    return;
+    return null;
   }
 
   // highlight.js emits HTML with the exact source text inside scope spans — parse it detached
@@ -90,6 +86,7 @@ export function collectTokenRanges(
   const template = document.createElement('template');
   template.innerHTML = highlightedHtml;
 
+  const tokens: CodeToken[] = [];
   let offset = 0;
 
   const walk = (node: Node, bucket: TokenBucket | undefined): void => {
@@ -97,18 +94,7 @@ export function collectTokenRanges(
       const length = node.nodeValue?.length ?? 0;
 
       if (bucket && length > 0) {
-        const range = createRangeForSpan(segments, offset, offset + length);
-
-        if (range) {
-          let ranges = rangesByBucket.get(bucket);
-
-          if (!ranges) {
-            ranges = [];
-            rangesByBucket.set(bucket, ranges);
-          }
-
-          ranges.push(range);
-        }
+        tokens.push({ start: offset, end: offset + length, bucket });
       }
 
       offset += length;
@@ -132,6 +118,31 @@ export function collectTokenRanges(
   };
 
   walk(template.content, undefined);
+
+  return tokens;
+}
+
+/**
+ * Turns tokens into DOM `Range`s over the code block's current text nodes and appends them to
+ * `rangesByBucket`. Ranges are rebuilt on every pass, because a render may replace the text nodes.
+ */
+export function addTokenRanges(segments: TextSegment[], tokens: CodeToken[], rangesByBucket: RangesByBucket): void {
+  for (const token of tokens) {
+    const range = createRangeForSpan(segments, token.start, token.end);
+
+    if (!range) {
+      continue;
+    }
+
+    let ranges = rangesByBucket.get(token.bucket);
+
+    if (!ranges) {
+      ranges = [];
+      rangesByBucket.set(token.bucket, ranges);
+    }
+
+    ranges.push(range);
+  }
 }
 
 /**
@@ -153,7 +164,7 @@ function highlightCode(hljs: HLJSApi, text: string, language: string): string | 
  * which text node covers which character span. `<br>` elements (CKEditor soft breaks) count
  * as newlines; block fillers are skipped.
  */
-function readCodeText(root: Element, segments: TextSegment[]): string {
+export function readCodeText(root: Element, segments: TextSegment[]): string {
   let text = '';
 
   const visit = (node: Node): void => {
