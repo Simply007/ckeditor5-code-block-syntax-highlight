@@ -1,6 +1,6 @@
 {
   "name": "@simply007org/ckeditor5-code-block-syntax-highlight",
-  "version": "0.3.0",
+  "version": "0.3.1",
   "description": "Live syntax highlighting for CKEditor 5 code blocks, painted with the CSS Custom Highlight API.",
   "keywords": [
     "ckeditor",
