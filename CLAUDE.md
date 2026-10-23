@@ -44,6 +44,9 @@ The package is published to npm as `@simply007org/ckeditor5-code-block-syntax-hi
   removes only its own ranges. Never `CSS.highlights.set()` a name another editor may share.
 - **Each editor owns a highlight.js instance** (`hljs.newInstance()`), so one editor's `grammars` config cannot leak
   into another. Do not register grammars on the global `highlight.js` singleton.
+- **Read the language from the model, not the classes.** Each rendered `<code>` maps back through the editing
+  mapper to its `codeBlock` and that element's `language` attribute. `codeBlock.languages` lets integrators set any
+  `class`, so parsing `language-*` classes misses custom classes and misreads unrelated ones.
 - **Gate on configured keys, not `getLanguage()`.** highlight.js resolves aliases, so `getLanguage('html')` finds the
   XML grammar even when `html` is configured as `false`.
 - **Offsets must survive the HTML re-parse.** highlight.js output is parsed back to recover token offsets, and the HTML

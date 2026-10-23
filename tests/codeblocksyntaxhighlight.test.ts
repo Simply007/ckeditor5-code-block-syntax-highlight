@@ -189,6 +189,45 @@ describe('CodeBlockSyntaxHighlight', () => {
     vi.stubGlobal('CSS', { highlights: registry });
   });
 
+  describe('reading the code block language', () => {
+    /** Replaces the document with one code block, so the test controls its model `language` directly. */
+    function setCodeBlock(editor: ClassicEditor, language: string, code: string) {
+      editor.model.change((writer) => {
+        const root = editor.model.document.getRoot()!;
+
+        writer.remove(writer.createRangeIn(root));
+
+        const codeBlock = writer.createElement('codeBlock', { language });
+
+        writer.append(codeBlock, root);
+        writer.appendText(code, codeBlock);
+      });
+    }
+
+    it('highlights a language configured with custom classes instead of `language-*`', async () => {
+      const editor = await createEditor('', {
+        codeBlock: { languages: [{ language: 'javascript', label: 'JavaScript', class: 'js javascript js-code' }] },
+      });
+
+      setCodeBlock(editor, 'javascript', 'const a = 1;');
+      await afterHighlightPass();
+
+      expect(paintedTokens('keyword')).toEqual(['const']);
+    });
+
+    it('ignores a class that merely contains `language-`', async () => {
+      // The block is plain text; only its unrelated class mentions a highlightable language.
+      const editor = await createEditor('', {
+        codeBlock: { languages: [{ language: 'plaintext', label: 'Plain text', class: 'my-language-javascript' }] },
+      });
+
+      setCodeBlock(editor, 'plaintext', 'const looksLikeCode = true;');
+      await afterHighlightPass();
+
+      expect(registry.size).toBe(0);
+    });
+  });
+
   describe('with several editors on the page', () => {
     it('paints the tokens of every editor at once', async () => {
       await createEditor('<pre><code class="language-javascript">const a = 1;</code></pre>');

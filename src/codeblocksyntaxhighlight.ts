@@ -93,8 +93,8 @@ export class CodeBlockSyntaxHighlight extends Plugin {
 
     // Every root, so multi-root editors are covered too.
     for (const domRoot of this.editor.editing.view.domRoots.values()) {
-      for (const codeElement of domRoot.querySelectorAll('pre > code[class*="language-"]')) {
-        const language = /language-([\w-]+)/.exec(codeElement.className)?.[1];
+      for (const codeElement of domRoot.querySelectorAll('pre > code')) {
+        const language = this._getCodeBlockLanguage(codeElement);
 
         if (language && this._languages.has(language)) {
           collectTokenRanges(codeElement, this._hljs, language, ranges);
@@ -104,5 +104,20 @@ export class CodeBlockSyntaxHighlight extends Plugin {
 
     replaceRanges(this._ranges, ranges);
     this._ranges = ranges;
+  }
+
+  /**
+   * The `language` attribute of the model code block a rendered `<code>` belongs to. Read from the
+   * model rather than the classes, which `codeBlock.languages` can set to anything.
+   */
+  private _getCodeBlockLanguage(codeElement: Element): string | undefined {
+    const { domConverter } = this.editor.editing.view;
+    const viewElement = domConverter.mapDomToView(codeElement as HTMLElement);
+    const modelElement = viewElement?.is('element')
+      ? this.editor.editing.mapper.toModelElement(viewElement)
+      : undefined;
+    const language = modelElement?.is('element', 'codeBlock') ? modelElement.getAttribute('language') : undefined;
+
+    return typeof language === 'string' ? language : undefined;
   }
 }
